@@ -1,20 +1,19 @@
-node('linux-amd64') {
+node('jnlp-linux-arm64') {
   checkout scm
 
   withEnv([
     'STORAGE_NAME=geoipdbjenkinsio', // Storage Account
     'STORAGE_FILESHARE=geoipdb-jenkins-io', // Fileshare
-    "GEOIPUPDATE_DB_DIR=${env.WORKSPACE}/geoipdata",
-    "GEOIPUPDATE_JSON_REPORT=${env.WORKSPACE}/geoipdata/.healthcheck.json", // Persist state for conditional update on next run
-    'GEOIPUPDATE_DOCKER_IMAGE=ghcr.io/maxmind/geoipupdate:v8.0.0', // Tracked by updatecli
-
+    "GEOIP_DB_DIR=${env.WORKSPACE}/geoipdata",
   ]) {
 
     stage('Check Prerequisites') {
       sh '''
-      docker run --rm --entrypoint=geoipupdate "${GEOIPUPDATE_DOCKER_IMAGE}" --version
       azcopy --version
       rsync --version
+      curl --version
+      tar --version
+      date --version # Must be GNU date on Ubuntu agents
       '''
     }
 
@@ -29,18 +28,13 @@ node('linux-amd64') {
     }
 
     stage('Get latest Maxmind GeoIP DB') {
-      withEnv([
-        'GEOIPUPDATE_DRYRUN=true', // set to true for production
-        'GEOIPUPDATE_EDITION_IDS=GeoLite2-ASN GeoLite2-City GeoLite2-Country', // ref. https://github.com/maxmind/geoipupdate/blob/main/doc/docker.md#configuring
+      withCredentials([
+        string(credentialsId: 'geoipupdate_account_id', variable: 'GEOIP_ACCOUNT_ID'), // ref. https://github.com/maxmind/geoip/blob/main/doc/docker.md#configuring
+        string(credentialsId: 'geoipupdate_license_key', variable: 'GEOIP_LICENSE_KEY'), // ref. https://github.com/maxmind/geoip/blob/main/doc/docker.md#configuring
       ]) {
-        withCredentials([
-          string(credentialsId: 'geoipupdate_account_id', variable: 'GEOIPUPDATE_ACCOUNT_ID'), // ref. https://github.com/maxmind/geoipupdate/blob/main/doc/docker.md#configuring
-          string(credentialsId: 'geoipupdate_license_key', variable: 'GEOIPUPDATE_LICENSE_KEY'), // ref. https://github.com/maxmind/geoipupdate/blob/main/doc/docker.md#configuring
-        ]) {
-          sh '''
-          bash ./get-maxmind-geoip-db.sh
-          '''
-        }
+        sh '''
+        bash ./get-maxmind-geoip-db.sh
+        '''
       }
     }
 
