@@ -48,24 +48,24 @@ for branch in "${branches[@]}"; do
 done
 popd
 
-# # TODO: store only the pom files of private cert repos so we can retrieve their deps
-
 test -d ./bom || git clone "https://github.com/${GITHUB_ORG}/bom"
 pushd ./bom
 time mvn "${mvn_global_opts[@]}"
 # Stay in the bom for its sub-project 'sample-plugin'
 read -r -a build_lines <<< "${RELEASE_LINES:-}"
 for build_line in "${build_lines[@]}"; do
-    mvn_buildline_opts=("${mvn_global_opts}")
-    if [[ $build_line != "weekly" ]]; then
-        mvn_buildline_opts+=("-P" "${build_line}")
-    fi
+	mvn_buildline_opts=("${mvn_global_opts[@]}")
+	if [[ $build_line != "weekly" ]]; then
+			mvn_buildline_opts+=("-P" "${build_line}")
+	fi
+
 	read -r -a branches <<< "${BOM_BRANCHES:-}"
 	for branch in "${branches[@]}"; do
 		git checkout "${branch}"
 		time mvn -pl sample-plugin \
 			-DincludeScore=runtime,compile,test \
-			"${mvn_buildline_opts[@]}"
+			"${mvn_buildline_opts[@]}" \
+			"${mvn_dependency_offline_target}"
 	done
 done
 popd
@@ -73,7 +73,8 @@ popd
 
 # Generate a new cache archive from the local Maven repository
 pushd "${mvn_local_repo}"
-find "${mvn_cache_archive}" -name '_remote.repositories' | xargs rm -v || true
+# Remove Maven internal resolutions files
+find "${mvn_cache_archive}" -name '_remote.repositories' | xargs -0 rm -v || true
 df -h .
 du -sh .
 time tar czf --no-xattrs "${mvn_cache_archive}" ./
