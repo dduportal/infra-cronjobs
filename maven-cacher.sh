@@ -17,7 +17,7 @@ mvn_cache_archive="${mvn_cache_dir}/${MVN_ARCHIVE_NAME}"
 mvn_dependency_offline_target='org.apache.maven.plugins:maven-dependency-plugin:3.10.0:go-offline'
 
 # mvn_global_opts=("-Dmaven.repo.local=${mvn_local_repo}" "${mvn_dependency_offline_target}")
-mvn_global_opts="-Dmaven.test.skip -Dexpression=settings.localRepository -Dmaven.repo.local=${mvn_local_repo} ${mvn_dependency_offline_target}"
+mvn_global_opts="-Dmaven.test.skip=true -Dexpression=settings.localRepository -Dmaven.repo.local=${mvn_local_repo} ${mvn_dependency_offline_target}"
 
 test -d ./jenkins || git clone "https://github.com/${GITHUB_ORG}/jenkins"
 pushd ./jenkins
