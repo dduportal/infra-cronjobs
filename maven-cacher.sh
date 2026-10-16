@@ -50,7 +50,6 @@ popd
 
 test -d ./bom || git clone "https://github.com/${GITHUB_ORG}/bom"
 pushd ./bom
-time mvn "${mvn_global_opts[@]}"
 # Stay in the bom for its sub-project 'sample-plugin'
 read -r -a build_lines <<< "${RELEASE_LINES:-}"
 for build_line in "${build_lines[@]}"; do
