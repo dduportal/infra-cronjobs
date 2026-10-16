@@ -72,9 +72,9 @@ popd
 
 # Generate a new cache archive from the local Maven repository
 pushd "${mvn_local_repo}"
-# Remove Maven internal resolutions files
-find "${mvn_cache_archive}" -name '_remote.repositories' | xargs -0 rm -v || true
-df -h .
 du -sh .
-time tar czf --no-xattrs "${mvn_cache_archive}" ./
+# Remove Maven internal resolutions files
+find . -type f -name '_remote.repositories' -exec rm -f {} \; || true
+du -sh .
+time tar --no-xattrs --create --compress --file="${mvn_cache_archive}" ./
 du -sh "${mvn_cache_dir}"/*.gz
