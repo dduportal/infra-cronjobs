@@ -1,7 +1,7 @@
 org.xmlunit:xmlunit-bom:pom:2.13.0
 io.jenkins.tools.incrementals:git-changelist-maven-extension:jar:1.13
 org.apache.maven.plugins:maven-clean-plugin:pom:3.5.0
-org.apache.maven.plugins:maven-deploy-plugin:3.2.0
+org.apache.maven.plugins:maven-deploy-plugin:jar:3.2.0
 org.apache.maven.plugins:maven-help-plugin:pom:2.0
 org.apache.maven.plugins:maven-help-plugin:pom:2.0.1
 org.apache.maven.plugins:maven-help-plugin:pom:2.0.2

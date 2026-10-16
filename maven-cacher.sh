@@ -15,38 +15,36 @@ mvn_local_repo="${MVN_LOCAL_REPO:-"${HOME}/.m2/repository"}"
 mvn_cache_archive="${mvn_cache_dir}/${MVN_ARCHIVE_NAME}"
 # As 'dependency:go-offline' always use latest and until https://github.com/jenkins-infra/helpdesk/issues/5198 is fixed let's pin to 3.10.0
 mvn_dependency_offline_target='org.apache.maven.plugins:maven-dependency-plugin:3.10.0:go-offline'
-
-# mvn_global_opts=("-Dmaven.repo.local=${mvn_local_repo}" "${mvn_dependency_offline_target}")
-mvn_global_opts="-Dmaven.test.skip=true -Dexpression=settings.localRepository -Dmaven.repo.local=${mvn_local_repo} ${mvn_dependency_offline_target}"
-
-test -d ./jenkins || git clone "https://github.com/${GITHUB_ORG}/jenkins"
-pushd ./jenkins
+mvn_global_opts=("-Dmaven.repo.local=${mvn_local_repo}")
+script_dir="$(cd "$(dirname "$0")" && pwd -P)"
 
 # Missing deps
-missing_deps_file="${MISSING_DEPS_FILE:-../missing-deps.txt}"
-ls
+missing_deps_file="${script_dir}"/missing-deps.txt
 test -f "${missing_deps_file}"
 
 while IFS= read -r missing || [[ -n "${missing}" ]]; do
     # Skip blank lines and comments
     [[ -z "${missing//[[:space:]]/}" || "${missing}" =~ ^[[:space:]]*# ]] && continue
 
-    time mvn $mvn_global_opts -Dartifact="${missing}"
+		missing_group_id="$(echo "$missing" | cut -d':' -f1)"
+		missing_artifact_id="$(echo "$missing" | cut -d':' -f2)"
+		missing_packaging="$(echo "$missing" | cut -d':' -f3)"
+		missing_version="$(echo "$missing" | cut -d':' -f4)"
+
+		time mvn "${mvn_global_opts[@]}" dependency:get \
+			-DgroupId="${missing_group_id}" \
+			-DartifactId="${missing_artifact_id}"\
+			-Dversion="${missing_version}" \
+			-Dpackaging="${missing_packaging}"
 done < "${missing_deps_file}"
 
-
-# missings_deps="org.apache.maven.plugins:maven-clean-plugin:pom:3.5.0  org.apache.maven.plugins:maven-help-plugin:pom:2.0  org.apache.maven.plugins:maven-help-plugin:pom:2.0.1  org.apache.maven.plugins:maven-help-plugin:pom:2.0.2  org.apache.maven.plugins:maven-help-plugin:pom:2.1  org.apache.maven.plugins:maven-help-plugin:pom:2.1.1  org.apache.maven.plugins:maven-help-plugin:pom:2.2  org.apache.maven.plugins:maven-help-plugin:pom:3.0.0  org.apache.maven.plugins:maven-help-plugin:pom:3.0.1  org.apache.maven.plugins:maven-help-plugin:pom:3.1.0  org.apache.maven.plugins:maven-help-plugin:pom:3.1.1  org.apache.maven.plugins:maven-help-plugin:pom:3.2.0  org.apache.maven.plugins:maven-help-plugin:pom:3.3.0  org.apache.maven.plugins:maven-help-plugin:pom:3.4.0  org.apache.maven.plugins:maven-help-plugin:pom:3.4.1  org.apache.maven.plugins:maven-help-plugin:pom:3.5.0  org.apache.maven.plugins:maven-plugins:pom:43  org.apache.maven.plugins:maven-plugins:pom:49  org.apache.maven.plugins:maven-site-plugin:pom:3.22.0 io.jenkins.tools.incrementals:git-changelist-maven-extension:jar:1.13 org.xmlunit:xmlunit-bom:pom:2.13.0 org.apache.maven.plugins:maven-install-plugin:pom:3.2.0 org.apache.maven.plugins:maven-deploy-plugin:pom:3.2.0 org.apache.maven.plugins:maven-help-plugin:pom:3.5.2 org.xmlunit:xmlunit-bom:pom:2.13.0 org.jvnet.hudson:license:jar:1.0"
-
-# read -r -a missings <<< "${missings_deps:-}"
-# for missing in "${missings[@]}"; do
-# 	time mvn $mvn_global_opts -Dartifact="${missing}"
-# done
+test -d ./jenkins || git clone "https://github.com/${GITHUB_ORG}/jenkins"
+pushd ./jenkins
 
 read -r -a branches <<< "${JENKINS_BRANCHES:-}"
 for branch in "${branches[@]}"; do
 	git checkout "${branch}"
-	sleep 5
-    time mvn "${mvn_global_opts[@]}"
+  time mvn "${mvn_global_opts[@]}" "${mvn_dependency_offline_target}"
 done
 popd
 
