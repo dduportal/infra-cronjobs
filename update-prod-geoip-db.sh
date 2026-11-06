@@ -22,8 +22,9 @@ now_unix="$(${dateCmd} --date 'now' +%s)"
 age_diff_in_days=$(( (geoipdb_age_unix - now_unix) / 86400 ))
 
 if [ "${age_diff_in_days}" -gt 7 ]
-  echo "[INFO] GeoIP DB age is more than 7 days aged: deploying to production and restarting services"
 then
+  echo "[INFO] GeoIP DB age is more than 7 days aged: deploying to production and restarting services"
+
   ####
   # Deploy DB files
   ####
