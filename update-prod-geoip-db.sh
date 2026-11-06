@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux -o pipefail
+set -eu -o pipefail
 
 geoip_db_dir="$(cd "${GEOIP_DB_DIR?'ERROR: environment variable GEOIP_DB_DIR must be set.'}" && pwd -P)" \
   || { echo "ERROR: no directory at the value provided by GEOIP_DB_DIR (${GEOIP_DB_DIR})"; exit 1; }
@@ -45,8 +45,6 @@ then
   || \
     { cat "${HOME}/.azcopy/*"; exit 1; }   # Dump the logs in case of error during azcopy copy
   unset fileShareSignedUrl
-  # Re-enable debug as no more token used
-  set -x
 
   ####
   # Then restart services to ensure they load the new DB

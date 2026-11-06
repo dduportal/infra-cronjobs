@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux -o pipefail
+set -eu -o pipefail
 
 geoip_db_dir=${GEOIP_DB_DIR?'ERROR: environment variable GEOIP_DB_DIR must be set.'}
 STORAGE_NAME=${STORAGE_NAME:?'ERROR: environment variable STORAGE_NAME must be set.'}
@@ -25,7 +25,7 @@ token="${fileShareSignedUrl#*\?}"
 
 # Assuming all data is at the root
 sourceUrl="${urlWithoutToken}*"
-echo "INFO: Copying from: ${sourceUrl}"
+echo "[INFO]: Copying from: ${sourceUrl}"
 
 # See https://github.com/Azure/azure-storage-azcopy/issues/3024 for the piped prefix workaround
 : | azcopy copy \
@@ -34,6 +34,11 @@ echo "INFO: Copying from: ${sourceUrl}"
   --log-level=ERROR `# Do not write too much logs (I/O...)` \
 || \
   { cat "${HOME}/.azcopy/*"; exit 1; }   # Dump the azcopy logs in case of error
+
+unset fileShareSignedUrl
+
+echo '[INFO] Retrieve data from Production:'
+echo
 
 ls -ltra "${geoip_db_dir}"/
 
