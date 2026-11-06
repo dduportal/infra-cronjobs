@@ -51,11 +51,13 @@ then
   ####
   # Then restart services to ensure they load the new DB
   ####
-  for mirrorbits_webservice in get.jenkins.io updates.jenkins.io
-  do
-    echo "INFO: restarting service ${mirrorbits_webservice}"
-    # TODO
-  done
+  echo '[INFO]: restarting service "updates.jenkins.io"...'
+  # TODO: track namespace and deployment name with updatecli from https://github.com/jenkins-infra/kubernetes-management/
+  kubectl --kubeconfig="${KUBECONFIG_UPDATESJENKINSIO}" --namespace=updates-jenkins-io rollout status --watch deployment updates-jenkins-io-content-mirrorbits
+
+  # TODO: track namespace and deployment name with updatecli from https://github.com/jenkins-infra/kubernetes-management/
+  echo '[INFO]: restarting service "get.jenkins.io"...'
+  kubectl --kubeconfig="${KUBECONFIG_GETJENKINSIO}" --namespace=get-jenkins-io rollout status --watch deployment get-jenkins-io-content-mirrorbits
 else
   echo '[INFO] GeoIP DB age is less than 7 days aged: no action to perform'
 fi
