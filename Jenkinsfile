@@ -41,8 +41,8 @@ node('jnlp-linux-arm64') {
     stage('Update Production GeoIP DB') {
       withCredentials([
         azureServicePrincipal(clientIdVariable: 'JENKINS_INFRA_FILESHARE_CLIENT_ID', clientSecretVariable: 'JENKINS_INFRA_FILESHARE_CLIENT_SECRET', credentialsId: 'cronjob-geoipdbstorage-fileshare-service-principal-writer', subscriptionIdVariable: 'JENKINS_INFRA_SUBSCRIPTION_ID ', tenantIdVariable: 'JENKINS_INFRA_FILESHARE_TENANT_ID'),
-        file(credentialsId: 'kubeconfig-publick8s-getjenkinsio-restarter', variable: 'KUBECONFIG_GETJENKINSIO'),
-        file(credentialsId: 'kubeconfig-publick8s-updatesjenkinsio-restarter', variable: 'KUBECONFIG_UPDATESJENKINSIO'),
+        file(credentialsId: 'kubeconfig-publick8s-sponsored-getjenkinsio-restarter', variable: 'KUBECONFIG_GETJENKINSIO'),
+        file(credentialsId: 'kubeconfig-publick8s-sponsored-updatesjenkinsio-restarter', variable: 'KUBECONFIG_UPDATESJENKINSIO'),
       ]) {
         sh '''
         bash ./update-prod-geoip-db.sh
