@@ -55,4 +55,8 @@ node('jnlp-linux-arm64') {
       }
     }
   }
+
+  stage('Publish Build Status Report') {
+    publishBuildStatusReport()
+  }
 }
