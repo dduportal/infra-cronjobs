@@ -1,3 +1,8 @@
+properties([
+  disableConcurrentBuilds(),
+  pipelineTriggers([cron('@weekly'),
+])])
+
 node('jnlp-linux-arm64') {
   checkout scm
 
